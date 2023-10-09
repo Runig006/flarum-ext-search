@@ -65,6 +65,7 @@ class BuildCommand extends Command
                 'created_at'       => ['type' => 'date'],
                 'updated_at'       => ['type' => 'date'],
                 'is_private'       => ['type' => 'boolean'],
+                'is_locked'        => ['type' => 'boolean'],
                 'is_sticky'        => ['type' => 'boolean'],
                 'groups'           => ['type' => 'integer'],
                 'tags'             => ['type' => 'integer'],

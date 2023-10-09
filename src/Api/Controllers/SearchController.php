@@ -168,6 +168,7 @@ class SearchController extends ListDiscussionsController
                     ->whereIn('discussions.id', $results->pluck('discussion_id')->filter())
                     ->orWhereIn('posts.id', $results->pluck('most_relevant_post_id')->filter());
             })
+            ->sortByDesc('last_posted_at')
             ->get()
             ->each(function (Discussion $discussion) use ($results) {
                 if (in_array($discussion->id, $results->pluck('discussion_id')->toArray())) {
@@ -180,7 +181,6 @@ class SearchController extends ListDiscussionsController
                 }
             })
             ->keyBy('id')
-            ->sortByDesc('weight')
             ->unique();
 
         $this->loadRelations($discussions, $include);
@@ -223,6 +223,7 @@ class SearchController extends ListDiscussionsController
 
         $subQuery = BoolQuery::create()
             ->add(TermQuery::create('is_private', 'false'))
+            ->add(TermQuery::create('is_locked', 'false'))
             ->add(TermsQuery::create('groups', $groups->toArray()));
 
         if ($this->extensionEnabled('fof-byobu') && $actor->exists) {

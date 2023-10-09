@@ -19,6 +19,10 @@ use Flarum\Discussion\Event\Deleted;
 use Flarum\Discussion\Event\Hidden;
 use Flarum\Discussion\Event\Restored;
 use Flarum\Discussion\Event\Started;
+use Flarum\Discussion\Event\Renamed;
+use Flarum\Lock\Event\DiscussionWasLocked;
+use Flarum\Lock\Event\DiscussionWasUnlocked;
+use Flarum\Post\Event\Posted;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -50,14 +54,17 @@ class DiscussionSeeder extends Seeder
 
     public static function savingOn(Dispatcher $events, callable $callable)
     {
-        $events->listen([Started::class, Restored::class], function ($event) use ($callable) {
+        $events->listen([Started::class, Restored::class, Renamed::class, DiscussionWasUnlocked::class], function ($event) use ($callable) {
             return $callable($event->discussion);
+        });
+        $events->listen([Posted::class], function ($event) use ($callable) {
+            return $callable($event->post->discussion);
         });
     }
 
     public static function deletingOn(Dispatcher $events, callable $callable)
     {
-        $events->listen([Deleted::class, Hidden::class], function ($event) use ($callable) {
+        $events->listen([Deleted::class, Hidden::class, DiscussionWasLocked::class], function ($event) use ($callable) {
             return $callable($event->discussion);
         });
     }
@@ -71,13 +78,14 @@ class DiscussionSeeder extends Seeder
     {
         $document = new Document([
             'type'            => $this->type(),
-            'id'              => $this->type().':'.$model->id,
+            'id'              => $this->type() . ':' . $model->id,
             'rawId'           => $model->id,
             'content'         => $model->title,
             'content_partial' => $model->title,
             'created_at'      => $model->created_at?->toAtomString(),
             'updated_at'      => $model->last_posted_at?->toAtomString(),
             'is_private'      => $model->is_private,
+            'is_locked'       => $model->is_locked,
             'user_id'         => $model->user_id,
             'groups'          => $this->groupsForDiscussion($model),
             'comment_count'   => $model->comment_count,
