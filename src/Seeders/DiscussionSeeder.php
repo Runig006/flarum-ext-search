@@ -23,6 +23,7 @@ use Flarum\Discussion\Event\Renamed;
 use Flarum\Lock\Event\DiscussionWasLocked;
 use Flarum\Lock\Event\DiscussionWasUnlocked;
 use Flarum\Post\Event\Posted;
+use Flarum\Tags\Event\DiscussionWasTagged;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -54,7 +55,7 @@ class DiscussionSeeder extends Seeder
 
     public static function savingOn(Dispatcher $events, callable $callable)
     {
-        $events->listen([Started::class, Restored::class, Renamed::class, DiscussionWasUnlocked::class], function ($event) use ($callable) {
+        $events->listen([Started::class, Restored::class, Renamed::class, DiscussionWasUnlocked::class, DiscussionWasTagged::class], function ($event) use ($callable) {
             return $callable($event->discussion);
         });
         $events->listen([Posted::class], function ($event) use ($callable) {
